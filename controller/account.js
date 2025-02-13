@@ -1,7 +1,25 @@
 const BankAccount = require('../models/Account')
-const { BadRequestError } = require('../errors')
+const { BadRequestError, NotFoundError } = require('../errors')
 const { StatusCodes } = require('http-status-codes')
 const generateAccoutNumber = require('../generateAccNum')
+
+const getAccount = async(req, res) => {
+    const { params: { id: accountID }, user: { userID } } = req
+    const account = await BankAccount.findById({ _id: accountID, createdBy: userID })
+    if(!account){
+        throw new NotFoundError(`No account with id ${ account } was found.`)
+    }
+    res.status(StatusCodes.OK).json({
+        details: {
+            id: account._id,
+            name: req.user.name,
+            accountNumber: account.accountNumber,
+            accountType: account.accountType,
+            balance: account.balance,
+            currency: account.currency
+        }
+    })
+}
 
 const createAccount = async (req, res) => {
     try {
@@ -32,4 +50,17 @@ const createAccount = async (req, res) => {
     }
 }
 
-module.exports = createAccount
+const deleteAccount = async(req, res) => {
+    const { params: { id: accountID }, user: { userID } } = req
+    const deleteAccount = await BankAccount.findByIdAndDelete({ _id: accountID, createdBy: userID })
+    if(!deleteAccount) {
+        throw new NotFoundError(`No account with id ${ accountID } was found.`)
+    }
+    res.status(StatusCodes.OK).json({ message: "Account successfully deleted." })
+}
+
+module.exports = {
+    createAccount,
+    getAccount,
+    deleteAccount
+}
