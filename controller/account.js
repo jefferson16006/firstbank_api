@@ -10,7 +10,7 @@ const getAccount = async(req, res) => {
         throw new NotFoundError(`No account with id ${ account } was found.`)
     }
     res.status(StatusCodes.OK).json({
-        details: {
+        details: { 
             id: account._id,
             name: req.user.name,
             accountNumber: account.accountNumber,
