@@ -1,9 +1,10 @@
 const express = require('express')
 const app = express()
 const connectDB = require('./db/connect')
-const authRouter = require('./routes/auth')
+const authRouter = require('./routes/user-account')
 const accountRouter = require('./routes/account')
-const transactRouter = require('./routes/transaction')
+const transactionRouter = require('./routes/transaction')
+const tranferRouter = require('./routes/transfer')
 const authenticationMiddleware = require('./middleware/auth')
 const errorHandlerMiddleware = require('./middleware/error-handler')
 const notFoundMiddleware = require('./middleware/not-found')
@@ -19,7 +20,8 @@ app.get('/', (req, res) => {
 
 // routes
 app.use('/api/v1/auth', authRouter)
-app.use('/api/v1/transaction', transactRouter)
+app.use('/api/v1/transaction', transactionRouter)
+app.use('/api/v1/transfer', tranferRouter)
 app.use('/api/v1/account', authenticationMiddleware, accountRouter)
 
 // middleware
