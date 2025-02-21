@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
 
 // routes
 app.use('/api/v1/auth', authRouter)
-app.use('/api/v1/transaction', transactionRouter)
+app.use('/api/v1/history', transactionRouter)
 app.use('/api/v1/transfer', tranferRouter)
 app.use('/api/v1/account', authenticationMiddleware, accountRouter)
 

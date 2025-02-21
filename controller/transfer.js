@@ -1,4 +1,5 @@
 const UserAccount = require('../models/Account')
+const History = require('../models/History')
 const { StatusCodes } = require('http-status-codes')
 const {
     BadRequestError,
@@ -7,7 +8,7 @@ const {
 } = require('../errors')
 
 const transfer = async (req, res) => {
-    const { sAccountNum, type, amount, rAccountNum, pin } = req.body
+    const { sAccountNum, amount, rAccountNum, pin, narration } = req.body
     if(!sAccountNum || !pin) {
         throw new BadRequestError('Please provide your account number and 4-digit pin.')
     }
@@ -23,27 +24,27 @@ const transfer = async (req, res) => {
     if(!existingRecipient) {
         throw new NotFoundError(`Invalid account number: no user with ${ rAccountNum } exists`)
     }
-    if(type === 'debit' && existingSender.balance > amount) {
+    if(existingSender.balance > amount) {
         await UserAccount.findOneAndUpdate(
-            { accountNumber: sAccountNum },  // Condition to find sender
-            { $inc: { balance: -amount } },  // Decrease sender's balance
+            { accountNumber: sAccountNum },
+            { $inc: { balance: -amount } },
             { new: true }
         )
-
         await UserAccount.findOneAndUpdate(
-            { accountNumber: rAccountNum },  // Condition to find recipient
-            { $inc: { balance: amount } },   // Increase recipient's balance
+            { accountNumber: rAccountNum },
+            { $inc: { balance: amount } },
             { new: true }
         )
-    } else {
-        throw new BadRequestError("Insufficient balance.")
-    }
-    // await existingSender.save()
-    // await existingRecipient.save()
+    } else throw new BadRequestError("Insufficient balance.")
+    
+    await History.create({
+        key: existingSender._id,
+        date: new Date().toLocaleString(),
+        rAccountNum: rAccountNum,
+        amount: amount,
+        narration: narration ? narration : ""
+    })
 
-    // if(type === 'debit' && !existingRecipient.balance <= 0) {
-    //     existingRecipient.balance -= amount
-    // }
     res.status(StatusCodes.OK).json({
         message: "Transaction successfull.",
         balance: existingSender.balance - amount

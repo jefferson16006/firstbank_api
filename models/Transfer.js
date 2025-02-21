@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 
 const TrasnferSchema = mongoose.Schema({
     sAccountNum: {
@@ -7,14 +7,14 @@ const TrasnferSchema = mongoose.Schema({
         unique: true,
         required: true
     },
-    type: {
-        type: String,
-        enum: {
-            values: ['debit', 'credit'],
-            message: 'Transaction type not supported.'
-        },
-        required: true
-    },
+    // type: {
+    //     type: String,
+    //     enum: {
+    //         values: ['debit', 'credit'],
+    //         message: 'Transaction type not supported.'
+    //     },
+    //     required: true
+    // },
     amount: {
         type: Number,
         required: [true, 'Please provide an amount for transaction.']
@@ -28,6 +28,9 @@ const TrasnferSchema = mongoose.Schema({
         required: [true, 'Please provide a 4-digit pin.'],
         minlength: 4,
         maxlength: 4
+    },
+    narration: {
+        type: String
     }
 })
 TrasnferSchema.pre('save', async function() {
