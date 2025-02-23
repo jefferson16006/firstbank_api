@@ -31,6 +31,12 @@ const TrasnferSchema = mongoose.Schema({
     },
     narration: {
         type: String
+    },
+    beneficiary: {
+        type: String,
+        enum: {
+            values: ['yes', 'no']
+        }
     }
 })
 TrasnferSchema.pre('save', async function() {

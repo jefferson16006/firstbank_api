@@ -1,5 +1,6 @@
 const UserAccount = require('../models/Account')
 const History = require('../models/History')
+const Beneficiary = require('../models/beneficiary')
 const { StatusCodes } = require('http-status-codes')
 const {
     BadRequestError,
@@ -8,7 +9,7 @@ const {
 } = require('../errors')
 
 const transfer = async (req, res) => {
-    const { sAccountNum, amount, rAccountNum, pin, narration } = req.body
+    const { sAccountNum, amount, rAccountNum, pin, narration, beneficiary } = req.body
     if(!sAccountNum || !pin) {
         throw new BadRequestError('Please provide your account number and 4-digit pin.')
     }
@@ -44,7 +45,13 @@ const transfer = async (req, res) => {
         amount: amount,
         narration: narration ? narration : ""
     })
-
+    if(beneficiary === 'yes') {
+        await Beneficiary.create({
+            key: existingSender._id,
+            name: existingRecipient.name,
+            rAccountNum: rAccountNum
+        })
+    }
     res.status(StatusCodes.OK).json({
         message: "Transaction successfull.",
         balance: existingSender.balance - amount

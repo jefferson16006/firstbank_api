@@ -5,6 +5,8 @@ const authRouter = require('./routes/user-account')
 const accountRouter = require('./routes/account')
 const transactionRouter = require('./routes/transaction')
 const tranferRouter = require('./routes/transfer')
+const airtimeRouter = require('./routes/airtime')
+const beneficiaryRouter = require('./routes/beneficiary')
 const authenticationMiddleware = require('./middleware/auth')
 const errorHandlerMiddleware = require('./middleware/error-handler')
 const notFoundMiddleware = require('./middleware/not-found')
@@ -22,6 +24,8 @@ app.get('/', (req, res) => {
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/history', transactionRouter)
 app.use('/api/v1/transfer', tranferRouter)
+app.use('/api/v1/airtime', airtimeRouter)
+app.use('/api/v1/beneficiary', beneficiaryRouter)
 app.use('/api/v1/account', authenticationMiddleware, accountRouter)
 
 // middleware
