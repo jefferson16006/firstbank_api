@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+const cookieParser = require('cookie-parser')
 const connectDB = require('./db/connect')
 const authRouter = require('./routes/user-account')
 const accountRouter = require('./routes/account')
@@ -13,17 +14,19 @@ const notFoundMiddleware = require('./middleware/not-found')
 require('dotenv').config()
 require('express-async-errors')
 
-// middleware to parse JSON data
+// middleware to parse JSON data & cookies
 app.use(express.json())
+app.use(cookieParser())
 
 app.get('/', (req, res) => {
-    res.send('Banking API')
+    console.log(req.cookies)
+    res.send(req.cookies)
 })
 
 // routes
 app.use('/api/v1/auth', authRouter)
-app.use('/api/v1/history', transactionRouter)
-app.use('/api/v1/transfer', tranferRouter)
+app.use('/api/v1/history', authenticationMiddleware, transactionRouter)
+app.use('/api/v1/transfer', authenticationMiddleware, tranferRouter)
 app.use('/api/v1/airtime', airtimeRouter)
 app.use('/api/v1/beneficiary', beneficiaryRouter)
 app.use('/api/v1/account', authenticationMiddleware, accountRouter)

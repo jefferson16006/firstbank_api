@@ -9,7 +9,7 @@ const {
 } = require('../errors')
 
 const transfer = async (req, res) => {
-    const { sAccountNum, amount, rAccountNum, pin, narration, beneficiary } = req.body
+    const { sAccountNum, amount, rAccountNum, pin, narration } = req.body
     if(!sAccountNum || !pin) {
         throw new BadRequestError('Please provide your account number and 4-digit pin.')
     }
@@ -25,18 +25,26 @@ const transfer = async (req, res) => {
     if(!existingRecipient) {
         throw new NotFoundError(`Invalid account number: no user with ${ rAccountNum } exists`)
     }
-    if(existingSender.balance > amount) {
+    const amountNum = Number(amount); // Ensure it's a number
+
+    if (!amountNum || amountNum <= 0) {
+        throw new BadRequestError("Please provide a valid transfer amount.");
+    }
+
+    if (existingSender.balance > amountNum) {
         await UserAccount.findOneAndUpdate(
             { accountNumber: sAccountNum },
-            { $inc: { balance: -amount } },
+            { $inc: { balance: -amountNum } },
             { new: true }
-        )
+        );
         await UserAccount.findOneAndUpdate(
             { accountNumber: rAccountNum },
-            { $inc: { balance: amount } },
+            { $inc: { balance: amountNum } },
             { new: true }
-        )
-    } else throw new BadRequestError("Insufficient balance.")
+        );
+    } else {
+        throw new BadRequestError("Insufficient balance.");
+    }
     
     await History.create({
         key: existingSender._id,
@@ -45,17 +53,20 @@ const transfer = async (req, res) => {
         amount: amount,
         narration: narration ? narration : ""
     })
-    if(beneficiary === 'yes') {
-        await Beneficiary.create({
-            key: existingSender._id,
-            name: existingRecipient.name,
-            rAccountNum: rAccountNum
-        })
-    }
+    // if(beneficiary === 'yes') {
+    //     await Beneficiary.create({
+    //         key: existingSender._id,
+    //         name: existingRecipient.name,
+    //         rAccountNum: rAccountNum
+    //     })
+    // }
+    const updatedSender = await UserAccount.findOne({ accountNumber: sAccountNum });
+
     res.status(StatusCodes.OK).json({
-        message: "Transaction successfull.",
-        balance: existingSender.balance - amount
-    })
+        message: "Transaction successful.",
+        balance: updatedSender.balance
+    });
+    
 }
 
 module.exports = transfer

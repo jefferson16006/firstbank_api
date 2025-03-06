@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const AccountSchema = mongoose.Schema({
     name: {
@@ -63,6 +64,20 @@ AccountSchema.pre('save', async function(next) {
     this.pin = await bcrypt.hash(this.pin, salt)
     next()
 })
+AccountSchema.methods.accessJWT = function() {
+    return jwt.sign(
+        { userID: this._id, name: this.name },
+        process.env.JWT_SECRETS,
+        { expiresIn: '15m' }
+    )
+}
+AccountSchema.methods.refreshJWT = function() {
+    return jwt.sign(
+        { userID: this._id },
+        process.env.JWT_REFRESH_SECRETS,
+        { expiresIn: '7d' }
+    )
+}
 AccountSchema.methods.comparePin = async function (candidatePin) {
     return await bcrypt.compare(candidatePin, this.pin)
 }
